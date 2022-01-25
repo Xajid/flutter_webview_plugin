@@ -33,6 +33,7 @@ class WebviewScaffold extends StatefulWidget {
     this.scrollBar = true,
     this.supportMultipleWindows = false,
     this.appCacheEnabled = false,
+    this.onBackPress,
     this.hidden = false,
     this.initialChild,
     this.allowFileURLs = false,
@@ -66,6 +67,7 @@ class WebviewScaffold extends StatefulWidget {
   final bool appCacheEnabled;
   final bool hidden;
   final Widget? initialChild;
+  final Function? onBackPress;
   final bool allowFileURLs;
   final bool resizeToAvoidBottomInset;
   final String? invalidUrlRegex;
@@ -96,17 +98,20 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       if (!mounted) {
         return;
       }
-
-      // The willPop/pop pair here is equivalent to Navigator.maybePop(),
-      // which is what's called from the flutter back button handler.
-      final pop = await _topMostRoute.willPop();
-      if (pop == RoutePopDisposition.pop) {
-        // Close the webview if it's on the route at the top of the stack.
-        final isOnTopMostRoute = _topMostRoute == ModalRoute.of(context);
-        if (isOnTopMostRoute) {
-          webviewReference.close();
+      if (widget.onBackPress != null) {
+        widget.onBackPress!();
+      } else {
+        // The willPop/pop pair here is equivalent to Navigator.maybePop(),
+        // which is what's called from the flutter back button handler.
+        final pop = await _topMostRoute.willPop();
+        if (pop == RoutePopDisposition.pop) {
+          // Close the webview if it's on the route at the top of the stack.
+          final isOnTopMostRoute = _topMostRoute == ModalRoute.of(context);
+          if (isOnTopMostRoute) {
+            webviewReference.close();
+          }
+          Navigator.pop(context);
         }
-        Navigator.pop(context);
       }
     });
 
